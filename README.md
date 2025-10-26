@@ -45,7 +45,7 @@ When launched, the app allows you to paste or type any news headline or paragrap
 - Prediction: *REAL* or *FAKE*  
 - Probability bar visualization  
 - Adjustable fake-detection threshold  
-
+ 
 ---
 
 ## Project Structure
