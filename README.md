@@ -19,7 +19,7 @@ Detect fake vs real news articles using Machine Learning, TF-IDF, and Logistic R
 - [License](#-license)
 - [Author](#-author)
 - [Future Improvements](#-future-improvements)
-
+ 
 ---
 
 ## Overview
