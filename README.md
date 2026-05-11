@@ -1,7 +1,11 @@
+<div align="center">
+
 # Fake News & Misinformation Detector
 
 Detect fake vs real news articles using Machine Learning, TF-IDF, and Logistic Regression, complete with training scripts, evaluation charts, and an interactive Streamlit web app.
-      
+
+</div>
+
 ---
 
 ## Table of Contents
