@@ -86,8 +86,8 @@ fake-news-detector/
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/yourusername/fake-news-detector.git
-cd fake-news-detector
+git clone https://github.com/AmirhosseinHonardoust/Fake-News-Detector.git
+cd Fake-News-Detector
 ```
 
 ### Install Dependencies
