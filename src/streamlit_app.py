@@ -52,7 +52,7 @@ def main():
     vectorizer_path = Path(args.vectorizer).resolve()
 
     st.set_page_config(page_title="Fake News Detector", page_icon="📰", layout="centered")
-    st.title("📰 Fake News & Misinformation Detector")
+    st.title("Fake News & Misinformation Detector")
     st.caption("TF-IDF + Logistic Regression (interpretable)")
 
     # sidebar: show where we look for files
