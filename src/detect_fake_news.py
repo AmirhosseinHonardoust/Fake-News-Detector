@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 import joblib
-
+ 
 from text_clean import clean_text
 
 def load_pipeline_or_parts(pipeline_path: str | None,
