@@ -1,80 +1,25 @@
 #!/usr/bin/env python3
-"""
-Small I/O utilities shared across training and app code.
-"""
+"""Small I/O helpers shared by project scripts."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Union, Mapping
-
-PathLike = Union[str, Path]
-
-__all__ = [
-    "ensure_outdir",
-    "save_json",
-    "load_json",
-]
-
-def ensure_outdir(path: PathLike) -> Path:
-    """
-    Ensure a directory exists; create parents if needed.
-
-    Parameters
-    ----------
-    path : str | Path
-        Directory path to create/ensure.
-
-    Returns
-    -------
-    Path
-        Resolved directory path.
-    """
-    p = Path(path)
-    p.mkdir(parents=True, exist_ok=True)
-    return p.resolve()
+from typing import Any
 
 
-def save_json(obj: Mapping[str, Any] | Any, path: PathLike, *, indent: int = 2) -> Path:
-    """
-    Save a Python object as pretty-printed JSON.
-
-    Parameters
-    ----------
-    obj : Any
-        JSON-serializable object.
-    path : str | Path
-        Output file path.
-    indent : int
-        JSON indent spacing.
-
-    Returns
-    -------
-    Path
-        The written file path.
-    """
-    p = Path(path)
-    p.parent.mkdir(parents=True, exist_ok=True)
-    with p.open("w", encoding="utf-8") as f:
-        json.dump(obj, f, indent=indent)
-    return p.resolve()
+def ensure_dir(path: str | Path) -> Path:
+    resolved = Path(path)
+    resolved.mkdir(parents=True, exist_ok=True)
+    return resolved
 
 
-def load_json(path: PathLike) -> Any:
-    """
-    Load JSON from disk.
+def save_json(payload: Any, path: str | Path, indent: int = 2) -> Path:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(payload, indent=indent), encoding="utf-8")
+    return target
 
-    Parameters
-    ----------
-    path : str | Path
-        JSON file path.
 
-    Returns
-    -------
-    Any
-        Parsed JSON.
-    """
-    p = Path(path)
-    with p.open("r", encoding="utf-8") as f:
-        return json.load(f)
+def load_json(path: str | Path) -> Any:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
