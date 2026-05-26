@@ -1,48 +1,99 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-import argparse
-from pathlib import Path
-import joblib
-         
-from text_clean import clean_text
+"""Command-line inference for the Fake News Style-Risk Detector."""
 
-def load_pipeline_or_parts(pipeline_path: str | None,
-                           model_path: str | None,
-                           vectorizer_path: str | None):
-    if pipeline_path:
-        pipe = joblib.load(pipeline_path)
-        return pipe, None, None
-    # fallback to separate artifacts
-    if not (model_path and vectorizer_path):
-        raise ValueError(
-            "Provide --pipeline OR both --model and --vectorizer."
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from model_compat import load_pipeline
+
+
+def default_pipeline_path() -> Path:
+    return Path(__file__).resolve().parents[1] / "outputs" / "pipeline.joblib"
+
+
+def classify_probability(
+    prob_fake: float,
+    threshold: float = 0.5,
+    uncertainty_margin: float = 0.10,
+) -> str:
+    """Convert a fake probability into REAL, FAKE, or UNCERTAIN.
+
+    The uncertainty margin is centered around the decision threshold. With the
+    default threshold=0.50 and uncertainty_margin=0.10, probabilities from
+    0.45 to 0.55 are labeled UNCERTAIN instead of forcing a brittle decision.
+    """
+    if not 0.0 <= prob_fake <= 1.0:
+        raise ValueError("prob_fake must be between 0 and 1")
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError("threshold must be between 0 and 1")
+    if uncertainty_margin < 0.0:
+        raise ValueError("uncertainty_margin must be non-negative")
+
+    half_margin = uncertainty_margin / 2
+    lower = max(0.0, threshold - half_margin)
+    upper = min(1.0, threshold + half_margin)
+
+    if lower <= prob_fake <= upper:
+        return "UNCERTAIN"
+    return "FAKE" if prob_fake > upper else "REAL"
+
+
+def predict_one(
+    pipeline_path: Path,
+    text: str,
+    threshold: float,
+    uncertainty_margin: float = 0.10,
+) -> dict[str, object]:
+    if not pipeline_path.exists():
+        raise FileNotFoundError(
+            f"Pipeline not found at {pipeline_path}. Train first with: python src/train_model.py"
         )
-    clf = joblib.load(model_path)
-    vec = joblib.load(vectorizer_path)
-    return None, clf, vec
+    pipeline = load_pipeline(pipeline_path)
+    prob_fake = float(pipeline.predict_proba([text])[0, 1])
+    label = classify_probability(prob_fake, threshold, uncertainty_margin)
+    return {
+        "label": label,
+        "prob_fake": prob_fake,
+        "threshold": threshold,
+        "uncertainty_margin": uncertainty_margin,
+        "model_path": str(pipeline_path),
+    }
+
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Detect fake news for a single text.")
-    ap.add_argument("--pipeline", help="Path to pipeline.joblib (preferred).")
-    ap.add_argument("--model", help="Path to model.joblib (fallback).")
-    ap.add_argument("--vectorizer", help="Path to vectorizer.joblib (fallback).")
-    ap.add_argument("--text", required=True, help="Headline or article text.")
-    ap.add_argument("--threshold", type=float, default=0.40,
-                    help="Decision threshold for FAKE (default: 0.40).")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser(
+        description="Classify one headline/article as REAL, FAKE, or UNCERTAIN."
+    )
+    parser.add_argument("--pipeline", default=str(default_pipeline_path()), help="Path to outputs/pipeline.joblib.")
+    parser.add_argument("--text", required=True, help="Headline or article text to classify.")
+    parser.add_argument("--threshold", type=float, default=0.5, help="Decision threshold for FAKE.")
+    parser.add_argument(
+        "--uncertainty-margin",
+        type=float,
+        default=0.10,
+        help="Probability band around the threshold labeled UNCERTAIN. Default: 0.10.",
+    )
+    parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    args = parser.parse_args()
 
-    pipe, clf, vec = load_pipeline_or_parts(args.pipeline, args.model, args.vectorizer)
-
-    s = clean_text(args.text)
-
-    if pipe is not None:
-        prob = float(pipe.predict_proba([s])[0, 1])
+    result = predict_one(
+        Path(args.pipeline),
+        args.text,
+        args.threshold,
+        args.uncertainty_margin,
+    )
+    if args.json:
+        print(json.dumps(result, indent=2))
     else:
-        X = vec.transform([s])
-        prob = float(clf.predict_proba(X)[0, 1])
+        print(
+            f"Label: {result['label']} | Fake probability: {result['prob_fake']:.3f} | "
+            f"Threshold: {result['threshold']:.2f} | "
+            f"Uncertainty margin: +/-{result['uncertainty_margin'] / 2:.2f}"
+        )
 
-    label = "FAKE" if prob >= args.threshold else "REAL"
-    print(f"Label: {label} | Fake probability: {prob:.3f} | Threshold: {args.threshold:.2f}")
 
 if __name__ == "__main__":
     main()
