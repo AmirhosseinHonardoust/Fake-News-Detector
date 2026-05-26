@@ -1,0 +1,10 @@
+{
+  "python": "3.13.5",
+  "platform": "Linux-4.4.0-x86_64-with-glibc2.41",
+  "scikit_learn": "1.8.0",
+  "pandas": "2.2.3",
+  "numpy": "2.3.5",
+  "matplotlib": "3.10.8",
+  "joblib": "1.5.3",
+  "note": "For best compatibility, load joblib artifacts with the same major/minor scikit-learn version used to train them, or retrain locally."
+}
