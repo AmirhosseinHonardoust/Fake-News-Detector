@@ -1,0 +1,28 @@
+[project]
+name = "fake-news-detector"
+version = "0.3.0"
+description = "Educational fake-news style-risk classification demo using TF-IDF and Logistic Regression."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Amir Honardoust"}]
+dependencies = [
+    "pandas>=2.0,<3.0",
+    "numpy>=1.25,<3.0",
+    "scikit-learn>=1.4,<2.0",
+    "matplotlib>=3.7,<4.0",
+    "joblib>=1.3,<2.0",
+    "streamlit>=1.33,<2.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
