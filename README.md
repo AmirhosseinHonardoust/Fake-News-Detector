@@ -6,6 +6,7 @@
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-orange)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)
 ![Status](https://img.shields.io/badge/Status-Educational%20ML%20Project-green)
+[![CI](https://github.com/AmirhosseinHonardoust/Fake-News-Detector/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AmirhosseinHonardoust/Fake-News-Detector/actions/workflows/ci.yml)
 
 </div>
 
@@ -147,7 +148,7 @@ Please provide a longer headline or article excerpt for a more reliable predicti
 
 ## Streamlit App Dashboard
 
-<img width="776" height="861" alt="Screenshot 2026-05-27 at 01-46-00 Fake News Style-Risk Detector" src="https://github.com/user-attachments/assets/cfd823d0-27a3-415b-8d96-7b2bcb274098" />
+<img width="676" height="761" alt="Screenshot 2026-05-27 at 01-46-00 Fake News Style-Risk Detector" src="https://github.com/user-attachments/assets/cfd823d0-27a3-415b-8d96-7b2bcb274098" />
 
 Run the dashboard with:
 
@@ -224,13 +225,14 @@ The main charts include:
 | Chart | Purpose |
 |---|---|
 | Confusion Matrix | Shows correct and incorrect predictions for REAL and FAKE samples |
-| ROC Curve | Shows how well the model separates the two classes |
+| ROC Curve | Shows how well the model separates the two classes across thresholds |
+| Precision-Recall Curve | Shows precision/recall trade-offs for the FAKE class |
 | Class Distribution | Shows whether the dataset is balanced |
 | Confidence Distribution | Helps analyze how confident the model is across predictions |
 
 ### Confusion Matrix
 
-<img width="520" height="360" alt="confusion_matrix" src="https://github.com/user-attachments/assets/e03fd9a9-63aa-4361-82b3-21f4dc8e11cf" />
+<img width="520" height="360" alt="confusion_matrix" src="https://github.com/user-attachments/assets/04d9732c-5efb-4d68-b1bc-04d2afa539a8" />
 
 The confusion matrix helps identify:
 
@@ -243,19 +245,29 @@ This is important because accuracy alone can hide model weaknesses.
 
 ### ROC Curve
 
-<img width="520" height="360" alt="roc_curve" src="https://github.com/user-attachments/assets/83b7764a-5461-4a69-947f-4963d0a5a5af" />
+<img width="520" height="360" alt="roc_curve" src="https://github.com/user-attachments/assets/b96c992f-8d48-4f76-9b43-eab15eeb4438" />
 
 The ROC curve shows the trade-off between true positive rate and false positive rate at different classification thresholds.
 
 A strong ROC-AUC score means the model separates the dataset classes well. However, ROC-AUC should still be interpreted carefully because dataset leakage can make results look stronger than they would be in real-world use.
 
+### Precision-Recall Curve
+
+<img width="520" height="360" alt="pr_curve" src="https://github.com/user-attachments/assets/ef755b40-3798-4fe3-936d-287fe72e9a17" />
+
+The precision-recall curve is useful for understanding how precision and recall change for the FAKE class across thresholds.
+
 ### Class Distribution
+
+<img width="520" height="350" alt="class_distribution" src="https://github.com/user-attachments/assets/d0b7758a-11b7-41da-8c8b-cac99adf469b" />
 
 The class distribution chart shows whether the dataset is balanced between REAL and FAKE articles.
 
 Balanced datasets are useful because they prevent accuracy from being inflated by a dominant class.
 
 ### Confidence Distribution
+
+<img width="520" height="350" alt="confidence_distribution" src="https://github.com/user-attachments/assets/5c3dcf79-172d-4a28-bb4e-bc07abe836e8" />
 
 The confidence distribution helps explain how often the model makes strong predictions versus borderline predictions.
 
@@ -317,6 +329,10 @@ This is especially useful for short inputs.
 ```text
 Fake-News-Detector/
 │
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
 ├── data/
 │   ├── Fake.csv
 │   └── True.csv
@@ -325,26 +341,36 @@ Fake-News-Detector/
 │   ├── data_statement.md
 │   └── model_card.md
 │
-├── models/
-│   ├── pipeline.joblib
-│   └── metrics.json
-│
 ├── outputs/
 │   ├── charts/
-│   └── leakage_report.json
+│   │   ├── class_distribution.png
+│   │   ├── confidence_distribution.png
+│   │   ├── confusion_matrix.png
+│   │   ├── pr_curve.png
+│   │   └── roc_curve.png
+│   ├── artifact_environment.json
+│   ├── data_profile.json
+│   ├── holdout_predictions.csv
+│   ├── leakage_report.json
+│   ├── metrics.json
+│   ├── model.joblib
+│   ├── pipeline.joblib
+│   └── vectorizer.joblib
 │
 ├── src/
 │   ├── detect_fake_news.py
 │   ├── model_compat.py
-│   ├── preprocessing.py
 │   ├── streamlit_app.py
-│   └── train_model.py
+│   ├── text_clean.py
+│   ├── train_model.py
+│   └── utils.py
 │
 ├── tests/
 │
 ├── README.md
 ├── requirements.txt
 ├── requirements-dev.txt
+├── requirements-lock.txt
 ├── pyproject.toml
 └── Makefile
 ```
@@ -413,8 +439,9 @@ This will:
 Generated outputs:
 
 ```text
-models/pipeline.joblib
-models/metrics.json
+outputs/pipeline.joblib
+outputs/metrics.json
+outputs/holdout_predictions.csv
 outputs/charts/
 outputs/leakage_report.json
 ```
@@ -434,7 +461,7 @@ Then open the local URL shown in your terminal.
 The app will load the trained pipeline from:
 
 ```text
-models/pipeline.joblib
+outputs/pipeline.joblib
 ```
 
 If the model file does not exist, train the model first:
@@ -508,7 +535,7 @@ Evaluation includes:
 Metrics are saved to:
 
 ```text
-models/metrics.json
+outputs/metrics.json
 ```
 
 Charts are saved to:
