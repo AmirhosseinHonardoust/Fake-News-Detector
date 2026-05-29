@@ -1,5 +1,4 @@
 import joblib
-
 from detect_fake_news import classify_probability, predict_one
 from train_model import build_pipeline
 
