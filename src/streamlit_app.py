@@ -8,7 +8,6 @@ import json
 from pathlib import Path
 
 import streamlit as st
-
 from detect_fake_news import classify_probability
 from model_compat import load_pipeline as load_model_pipeline
 
