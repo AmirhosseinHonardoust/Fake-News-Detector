@@ -5,14 +5,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
+import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Final
 
 import joblib
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import sklearn
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
@@ -28,7 +33,6 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 from text_clean import TextCleaner, clean_text
 
@@ -209,6 +213,50 @@ def plot_pr(y_true: np.ndarray, y_prob_fake: np.ndarray, out: Path) -> None:
     plt.close(fig)
 
 
+def plot_class_distribution(class_balance: dict[str, int], out: Path) -> None:
+    labels = LABEL_NAMES
+    counts = [class_balance.get(label, 0) for label in labels]
+    fig, ax = plt.subplots(figsize=(7, 5))
+    bars = ax.bar(labels, counts)
+    ax.set_title("Dataset Class Distribution")
+    ax.set_xlabel("Label")
+    ax.set_ylabel("Number of samples")
+    for bar, count in zip(bars, counts, strict=False):
+        ax.text(bar.get_x() + bar.get_width() / 2, count, str(count), ha="center", va="bottom")
+    fig.tight_layout()
+    fig.savefig(out, dpi=160)
+    plt.close(fig)
+
+
+def plot_confidence_distribution(y_prob_fake: np.ndarray, threshold: float, out: Path) -> None:
+    confidence = np.maximum(y_prob_fake, 1 - y_prob_fake)
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.hist(confidence, bins=20, edgecolor="black")
+    ax.axvline(max(threshold, 1 - threshold), linestyle="--", label="Decision threshold proxy")
+    ax.set_title("Prediction Confidence Distribution - Holdout Test")
+    ax.set_xlabel("Prediction confidence proxy")
+    ax.set_ylabel("Number of samples")
+    ax.set_xlim(0.5, 1.0)
+    ax.legend(loc="upper left")
+    fig.tight_layout()
+    fig.savefig(out, dpi=160)
+    plt.close(fig)
+
+def artifact_environment() -> dict[str, object]:
+    return {
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "scikit_learn": sklearn.__version__,
+        "pandas": pd.__version__,
+        "numpy": np.__version__,
+        "matplotlib": matplotlib.__version__,
+        "joblib": joblib.__version__,
+        "note": (
+            "For best compatibility, load joblib artifacts with the same major/minor "
+            "scikit-learn version used to train them, or retrain locally."
+        ),
+    }
+
 def write_json(payload: object, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -273,6 +321,7 @@ def main() -> None:
     args = parse_args()
     outdir = ensure_dir(Path(args.outdir))
     charts_dir = ensure_dir(outdir / "charts")
+    write_json(artifact_environment(), outdir / "artifact_environment.json")
 
     data, profile = build_labeled_frame(
         real_path=Path(args.real),
@@ -349,6 +398,8 @@ def main() -> None:
     plot_confusion_matrix(test_metrics["confusion_matrix"], charts_dir / "confusion_matrix.png", "Confusion Matrix - Holdout Test")
     plot_roc(y_test, test_prob, charts_dir / "roc_curve.png")
     plot_pr(y_test, test_prob, charts_dir / "pr_curve.png")
+    plot_class_distribution(profile.class_balance, charts_dir / "class_distribution.png")
+    plot_confidence_distribution(test_prob, args.threshold, charts_dir / "confidence_distribution.png")
 
     predictions = pd.DataFrame(
         {
