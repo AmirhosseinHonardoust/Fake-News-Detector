@@ -1,5 +1,4 @@
 from sklearn.pipeline import Pipeline
-
 from train_model import build_pipeline
 
 
