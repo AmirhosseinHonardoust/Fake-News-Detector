@@ -1,0 +1,10 @@
+{
+  "python": "3.10.0",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "scikit_learn": "1.6.1",
+  "pandas": "2.2.3",
+  "numpy": "1.26.4",
+  "matplotlib": "3.10.0",
+  "joblib": "1.4.2",
+  "note": "For best compatibility, load joblib artifacts with the same major/minor scikit-learn version used to train them, or retrain locally."
+}

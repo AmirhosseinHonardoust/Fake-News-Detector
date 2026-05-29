@@ -1,0 +1,40 @@
+{
+  "subject_distribution": {
+    "FAKE": {
+      "News": 999,
+      "politicsNews": 0
+    },
+    "REAL": {
+      "News": 0,
+      "politicsNews": 992
+    }
+  },
+  "contains_reuters_by_label": {
+    "FAKE": {
+      "count": 8,
+      "rate": 0.008008008008008008
+    },
+    "REAL": {
+      "count": 990,
+      "rate": 0.9979838709677419
+    }
+  },
+  "heuristic_contains_reuters_accuracy": 0.9949773982923155,
+  "date_examples_by_label": {
+    "FAKE": [
+      "31-Dec-17",
+      "31-Dec-17",
+      "30-Dec-17",
+      "29-Dec-17",
+      "25-Dec-17"
+    ],
+    "REAL": [
+      "31-Dec-17",
+      "29-Dec-17",
+      "31-Dec-17",
+      "30-Dec-17",
+      "29-Dec-17"
+    ]
+  },
+  "interpretation": "High performance on this dataset can be inflated by source/style artifacts. Use external validation before making real-world claims."
+}
