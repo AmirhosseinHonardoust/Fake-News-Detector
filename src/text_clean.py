@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import re
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -14,7 +14,7 @@ NON_ASCII_RE = re.compile(r"[^\x00-\x7F]+")
 WHITESPACE_RE = re.compile(r"\s+")
 
 
-def clean_text(text: Optional[str]) -> str:
+def clean_text(text: str | None) -> str:
     """Normalize one text value while preserving words useful for TF-IDF.
 
     The cleaner is intentionally conservative. It removes obvious noise such as URLs,
@@ -36,7 +36,7 @@ def clean_text(text: Optional[str]) -> str:
 class TextCleaner(BaseEstimator, TransformerMixin):
     """scikit-learn compatible transformer for consistent preprocessing."""
 
-    def fit(self, X: Iterable[object], y: object | None = None) -> "TextCleaner":
+    def fit(self, X: Iterable[object], y: object | None = None) -> TextCleaner:
         return self
 
     def transform(self, X: Iterable[object]) -> list[str]:
