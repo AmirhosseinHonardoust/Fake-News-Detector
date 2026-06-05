@@ -148,7 +148,10 @@ Please provide a longer headline or article excerpt for a more reliable predicti
 
 ## Streamlit App Dashboard
 
+<div align="center">
+
 <img width="676" height="761" alt="Screenshot 2026-05-27 at 01-46-00 Fake News Style-Risk Detector" src="https://github.com/user-attachments/assets/cfd823d0-27a3-415b-8d96-7b2bcb274098" />
+</div>
 
 Run the dashboard with:
 
@@ -160,6 +163,8 @@ The dashboard is designed to be simple, readable, and honest about what the mode
 
 ### Dashboard Features
 
+<div align="center">
+
 | Feature | Description |
 |---|---|
 | Text Input Area | Allows users to paste a headline, paragraph, or article excerpt |
@@ -169,6 +174,7 @@ The dashboard is designed to be simple, readable, and honest about what the mode
 | Responsible-Use Warning | Reminds users that the model is not a fact-checking system |
 | Metrics Section | Displays available evaluation metrics from the trained model |
 | Leakage Warning | Explains why high scores should be interpreted carefully |
+</div>
 
 ### Dashboard Interpretation
 
@@ -222,6 +228,8 @@ outputs/charts/
 
 The main charts include:
 
+<div align="center">
+
 | Chart | Purpose |
 |---|---|
 | Confusion Matrix | Shows correct and incorrect predictions for REAL and FAKE samples |
@@ -229,10 +237,14 @@ The main charts include:
 | Precision-Recall Curve | Shows precision/recall trade-offs for the FAKE class |
 | Class Distribution | Shows whether the dataset is balanced |
 | Confidence Distribution | Helps analyze how confident the model is across predictions |
+</div>
 
 ### Confusion Matrix
 
+<div align="center">
+
 <img width="520" height="360" alt="confusion_matrix" src="https://github.com/user-attachments/assets/04d9732c-5efb-4d68-b1bc-04d2afa539a8" />
+</div>
 
 The confusion matrix helps identify:
 
@@ -245,7 +257,10 @@ This is important because accuracy alone can hide model weaknesses.
 
 ### ROC Curve
 
+<div align="center">
+
 <img width="520" height="360" alt="roc_curve" src="https://github.com/user-attachments/assets/b96c992f-8d48-4f76-9b43-eab15eeb4438" />
+</div>
 
 The ROC curve shows the trade-off between true positive rate and false positive rate at different classification thresholds.
 
@@ -253,13 +268,19 @@ A strong ROC-AUC score means the model separates the dataset classes well. Howev
 
 ### Precision-Recall Curve
 
+<div align="center">
+
 <img width="520" height="360" alt="pr_curve" src="https://github.com/user-attachments/assets/ef755b40-3798-4fe3-936d-287fe72e9a17" />
+</div>
 
 The precision-recall curve is useful for understanding how precision and recall change for the FAKE class across thresholds.
 
 ### Class Distribution
 
+<div align="center">
+
 <img width="520" height="350" alt="class_distribution" src="https://github.com/user-attachments/assets/d0b7758a-11b7-41da-8c8b-cac99adf469b" />
+</div>
 
 The class distribution chart shows whether the dataset is balanced between REAL and FAKE articles.
 
@@ -267,7 +288,10 @@ Balanced datasets are useful because they prevent accuracy from being inflated b
 
 ### Confidence Distribution
 
+<div align="center">
+
 <img width="520" height="350" alt="confidence_distribution" src="https://github.com/user-attachments/assets/5c3dcf79-172d-4a28-bb4e-bc07abe836e8" />
+</div>
 
 The confidence distribution helps explain how often the model makes strong predictions versus borderline predictions.
 
@@ -498,11 +522,14 @@ python src/detect_fake_news.py --text "Your news text here" --json
 
 The model returns one of three labels:
 
+<div align="center">
+
 | Label | Meaning |
 |---|---|
 | `REAL` | The text resembles real-news examples in the dataset |
 | `FAKE` | The text resembles fake-news examples in the dataset |
 | `UNCERTAIN` | The model confidence is too close to the decision boundary |
+</div>
 
 Example:
 
