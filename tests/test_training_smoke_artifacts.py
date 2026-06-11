@@ -12,6 +12,8 @@ EXPECTED_OUTPUT_FILES = [
     "data_profile.json",
     "leakage_report.json",
     "metrics.json",
+    "baseline_report.json",
+    "baseline_comparison.csv",
     "holdout_predictions.csv",
     "pipeline.joblib",
     "vectorizer.joblib",
@@ -52,6 +54,13 @@ def test_metrics_json_has_expected_schema(smoke_outdir: Path) -> None:
     assert "cross_validation_train_only" in metrics
     assert "dataset_profile" in metrics
     assert "holdout_test" in metrics
+    assert "baseline_comparison" in metrics
+
+    baseline_summary = metrics["baseline_comparison"]
+    assert baseline_summary["report_path"] == "baseline_report.json"
+    assert baseline_summary["comparison_csv"] == "baseline_comparison.csv"
+    assert baseline_summary["ranking_by_macro_f1"]
+    assert baseline_summary["ranking_by_accuracy"]
 
     holdout = metrics["holdout_test"]
     assert isinstance(holdout, dict)
@@ -95,6 +104,34 @@ def test_data_profile_has_expected_schema(smoke_outdir: Path) -> None:
     assert class_balance["REAL"] > 0
     assert class_balance["FAKE"] > 0
 
+
+
+def test_baseline_report_has_expected_schema(smoke_outdir: Path) -> None:
+    report = read_json(smoke_outdir / "baseline_report.json")
+
+    assert "baselines" in report
+    assert "ranking_by_macro_f1" in report
+    assert "ranking_by_accuracy" in report
+    assert "interpretation" in report
+
+    baselines = report["baselines"]
+    assert {"majority_class", "empirical_prior", "reuters_heuristic"}.issubset(baselines)
+    for metrics in baselines.values():
+        for key in ["accuracy", "macro_f1", "precision_fake", "recall_fake", "f1_fake"]:
+            assert key in metrics
+            assert 0.0 <= float(metrics[key]) <= 1.0
+
+
+def test_baseline_comparison_csv_has_expected_schema(smoke_outdir: Path) -> None:
+    with (smoke_outdir / "baseline_comparison.csv").open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    assert len(rows) >= 3
+    required_columns = {"baseline", "accuracy", "macro_f1", "precision_fake", "recall_fake"}
+    assert required_columns.issubset(rows[0].keys())
+    assert {"majority_class", "empirical_prior", "reuters_heuristic"}.issubset(
+        {row["baseline"] for row in rows}
+    )
 
 def test_holdout_predictions_have_expected_schema(smoke_outdir: Path) -> None:
     with (smoke_outdir / "holdout_predictions.csv").open(newline="", encoding="utf-8") as handle:
