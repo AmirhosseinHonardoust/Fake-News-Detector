@@ -34,6 +34,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 from sklearn.pipeline import Pipeline
 
+from baselines import baseline_report_to_frame, build_baseline_report
 from text_clean import TextCleaner, clean_text
 
 LABEL_NAMES: Final[list[str]] = ["REAL", "FAKE"]
@@ -242,6 +243,7 @@ def plot_confidence_distribution(y_prob_fake: np.ndarray, threshold: float, out:
     fig.savefig(out, dpi=160)
     plt.close(fig)
 
+
 def artifact_environment() -> dict[str, object]:
     return {
         "python": sys.version.split()[0],
@@ -256,6 +258,7 @@ def artifact_environment() -> dict[str, object]:
             "scikit-learn version used to train them, or retrain locally."
         ),
     }
+
 
 def write_json(payload: object, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -332,15 +335,19 @@ def main() -> None:
     write_json(asdict(profile), outdir / "data_profile.json")
     write_json(leakage_report(data), outdir / "leakage_report.json")
 
-    X = data["text_for_model"]
     y = data["label"].map(LABEL_TO_ID).to_numpy()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
+    row_indices = np.arange(len(data))
+    train_idx, test_idx, y_train, y_test = train_test_split(
+        row_indices,
         y,
         test_size=args.test_size,
         stratify=y,
         random_state=args.random_state,
     )
+    train_frame = data.iloc[train_idx].reset_index(drop=True)
+    test_frame = data.iloc[test_idx].reset_index(drop=True)
+    X_train = train_frame["text_for_model"]
+    X_test = test_frame["text_for_model"]
 
     pipeline = build_pipeline(
         max_features=args.max_features,
@@ -366,6 +373,16 @@ def main() -> None:
 
     train_metrics = evaluate_split("train", y_train, train_prob, args.threshold)
     test_metrics = evaluate_split("holdout_test", y_test, test_prob, args.threshold)
+    baseline_report = build_baseline_report(
+        train_frame=train_frame,
+        test_frame=test_frame,
+        y_train=y_train,
+        y_test=y_test,
+        threshold=args.threshold,
+    )
+    baseline_frame = baseline_report_to_frame(baseline_report)
+    write_json(baseline_report, outdir / "baseline_report.json")
+    baseline_frame.to_csv(outdir / "baseline_comparison.csv", index=False)
 
     metrics = {
         "model": "TF-IDF + Logistic Regression",
@@ -388,6 +405,12 @@ def main() -> None:
         },
         "train": train_metrics,
         "holdout_test": test_metrics,
+        "baseline_comparison": {
+            "report_path": "baseline_report.json",
+            "comparison_csv": "baseline_comparison.csv",
+            "ranking_by_macro_f1": baseline_report["ranking_by_macro_f1"],
+            "ranking_by_accuracy": baseline_report["ranking_by_accuracy"],
+        },
         "notes": [
             "Holdout metrics are more meaningful than training metrics, but the included dataset has known source/style leakage.",
             "See outputs/leakage_report.json before making real-world claims.",
