@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pytest
 
-
 EXPECTED_OUTPUT_FILES = [
     "artifact_environment.json",
     "data_profile.json",
