@@ -5,9 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  test-and-lint:
+  test-lint-and-train:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,14 +19,49 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Run tests
+      - name: Compile source files
+        run: python -m compileall src tests
+
+      - name: Run unit tests
         run: pytest -q
 
       - name: Run Ruff
         run: ruff check src tests
+
+      - name: Run training smoke workflow
+        run: |
+          python src/train_model.py \
+            --real data/True.csv \
+            --fake data/Fake.csv \
+            --outdir ci_outputs \
+            --cv-folds 2 \
+            --max-features 3000 \
+            --ngram-max 1 \
+            --min-df 2 \
+            --C 1.0
+
+      - name: Run CLI prediction smoke check
+        run: |
+          python src/detect_fake_news.py \
+            --pipeline ci_outputs/pipeline.joblib \
+            --text "Reuters reported that officials released a policy statement after the committee meeting." \
+            --json > ci_outputs/prediction.json
+
+      - name: Validate smoke artifacts
+        env:
+          FAKE_NEWS_TRAINING_OUTDIR: ci_outputs
+          FAKE_NEWS_PREDICTION_JSON: ci_outputs/prediction.json
+        run: pytest -q tests/test_training_smoke_artifacts.py
+
+      - name: Upload smoke outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: fake-news-training-smoke-outputs
+          path: ci_outputs/
