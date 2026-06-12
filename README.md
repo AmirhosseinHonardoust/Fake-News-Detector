@@ -16,7 +16,7 @@ The project uses a **TF-IDF + Logistic Regression** pipeline and includes a Stre
 
 > **Important:** This project is a **style-risk detector**, not a real-world fact-checker.  
 > It does not verify claims using external evidence. Instead, it estimates whether a text looks stylistically similar to examples labeled as real or fake in the training dataset.
-       
+        
 ---
 
 ## Table of Contents
