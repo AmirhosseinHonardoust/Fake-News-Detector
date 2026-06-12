@@ -11,7 +11,7 @@
 </div>
 
 A professional machine learning project that analyzes news text and predicts whether it stylistically resembles **REAL** or **FAKE** news examples from a labeled dataset.
- 
+
 The project uses a **TF-IDF + Logistic Regression** pipeline and includes a Streamlit dashboard, command-line prediction support, model evaluation, leakage analysis, charts, tests, and responsible machine learning documentation.
 
 > **Important:** This project is a **style-risk detector**, not a real-world fact-checker.  
