@@ -43,6 +43,9 @@ Current profile from `outputs/data_profile.json`:
 - 20% holdout test set
 - 3-fold StratifiedKFold cross-validation on the training split only
 - Threshold-based classification with default `p(fake) >= 0.5`
+- Source-confounding diagnostic (`outputs/source_confounding_report.json`) and,
+  when feasible, an out-of-source holdout where whole groups are held out of
+  training
 
 ## Current metrics
 
@@ -82,6 +85,18 @@ weekday datelines, "president donald"). In other words, the corpus is two
 entirely different sources with two different writing styles, and stripping a
 single marker does not remove that separation. A realistic evaluation requires
 source-balanced data or an out-of-source split, not just token removal.
+
+### Out-of-source evaluation is impossible on this dataset
+
+The source-confounding diagnostic reports a confounding score of **1.000** for the
+`subject` column: `politicsNews` is 100% REAL and `News` is 100% FAKE. Because each
+source maps to exactly one class, holding out any source for testing produces a
+single-class test set, so an honest out-of-source holdout cannot be run here
+(`out_of_source_split_feasible: false`). This is the strongest possible evidence
+that the reported accuracy reflects source recognition rather than misinformation
+detection. The diagnostic (`outputs/source_confounding_report.json`) runs
+automatically; on a source-balanced dataset it will instead execute an
+out-of-source holdout via `--eval-out-of-source`.
 
 ## Ethical considerations
 

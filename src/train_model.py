@@ -34,6 +34,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 from sklearn.pipeline import Pipeline
 
+from evaluation import out_of_source_evaluation, source_confounding_report
 from text_clean import TextCleaner, clean_text
 
 LABEL_NAMES: Final[list[str]] = ["REAL", "FAKE"]
@@ -321,6 +322,17 @@ def parse_args() -> argparse.Namespace:
         "model cannot separate classes by recognizing the wire source. Produces a more "
         "honest (usually lower) accuracy estimate.",
     )
+    parser.add_argument(
+        "--group-col",
+        default="subject",
+        help="Column used as the source/group for the confounding diagnostic.",
+    )
+    parser.add_argument(
+        "--eval-out-of-source",
+        action="store_true",
+        help="When the group column is not confounded with the label, also run an "
+        "out-of-source holdout (whole groups held out of training) and report it.",
+    )
     return parser.parse_args()
 
 
@@ -338,6 +350,31 @@ def main() -> None:
     )
     write_json(asdict(profile), outdir / "data_profile.json")
     write_json(leakage_report(data), outdir / "leakage_report.json")
+
+    confounding = source_confounding_report(data, group_col=args.group_col)
+    write_json(confounding, outdir / "source_confounding_report.json")
+
+    out_of_source: dict[str, object] | None = None
+    feasible = bool(confounding.get("out_of_source_split_feasible"))
+    if args.eval_out_of_source and feasible:
+        out_of_source = out_of_source_evaluation(
+            data,
+            make_pipeline=lambda: build_pipeline(
+                max_features=args.max_features,
+                min_df=args.min_df,
+                max_df=args.max_df,
+                ngram_max=args.ngram_max,
+                C=args.C,
+                strip_source=args.strip_source_artifacts,
+            ),
+            text_col="text_for_model",
+            group_col=args.group_col,
+            label_to_id=LABEL_TO_ID,
+            threshold=args.threshold,
+            random_state=args.random_state,
+        )
+        if out_of_source is not None:
+            write_json(out_of_source, outdir / "out_of_source_metrics.json")
 
     X = data["text_for_model"]
     y = data["label"].map(LABEL_TO_ID).to_numpy()
@@ -397,6 +434,8 @@ def main() -> None:
         },
         "train": train_metrics,
         "holdout_test": test_metrics,
+        "source_confounding": confounding,
+        "out_of_source_holdout": out_of_source,
         "notes": [
             "Holdout metrics are more meaningful than training metrics, but the included dataset has known source/style leakage.",
             "See outputs/leakage_report.json before making real-world claims.",
@@ -438,6 +477,16 @@ def main() -> None:
     print(f"Holdout accuracy: {test_metrics['accuracy']:.3f}")
     print(f"Holdout macro F1: {test_metrics['macro_f1']:.3f}")
     print(f"Holdout ROC-AUC: {test_metrics['roc_auc']:.3f}")
+    if confounding.get("available"):
+        print(
+            f"Source confounding ({args.group_col}): "
+            f"score={confounding['confounding_score']:.3f}, "
+            f"out-of-source split feasible={confounding['out_of_source_split_feasible']}"
+        )
+    if out_of_source is not None:
+        print(f"Out-of-source holdout accuracy: {out_of_source['accuracy']:.3f}")
+    elif args.eval_out_of_source and not feasible:
+        print("Out-of-source holdout skipped: source is confounded with the label.")
     print(f"Artifacts saved to: {outdir.resolve()}")
 
 
