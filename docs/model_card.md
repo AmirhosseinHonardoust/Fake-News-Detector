@@ -48,13 +48,19 @@ Current profile from `outputs/data_profile.json`:
 
 From `outputs/metrics.json`:
 
-| Metric | Value |
-|---|---:|
-| Holdout accuracy | 1.000 |
-| Holdout macro F1 | 1.000 |
-| Holdout ROC-AUC | 1.000 |
-| Train-only CV macro F1 mean | 0.996 |
-| Train-only CV macro F1 std | 0.003 |
+| Metric | Leaked (default) | De-leaked (`--strip-source-artifacts`) |
+|---|---:|---:|
+| Holdout accuracy | 1.000 | 0.995 |
+| Holdout macro F1 | 1.000 | 0.995 |
+| Holdout ROC-AUC | 1.000 | 1.000 |
+
+The de-leaked column removes the Reuters dateline and any "Reuters" mentions
+before training. Reproduce with:
+
+```bash
+python src/train_model.py --outdir outputs                          # leaked
+python src/train_model.py --outdir outputs_deleaked --strip-source-artifacts
+```
 
 ## Critical limitation: source/style leakage
 
@@ -65,6 +71,17 @@ From `outputs/metrics.json`:
 - A simple heuristic `Reuters => REAL, otherwise FAKE` reaches about 99.5% accuracy
 
 This strongly suggests that the model learns dataset/source artifacts in addition to, or instead of, misinformation patterns.
+
+### The leakage is deeper than one token
+
+Removing "Reuters" barely changes accuracy (1.000 → 0.995). Inspecting the
+de-leaked model's top features shows why: the FAKE class is still separable
+from boilerplate such as "Getty images" and "featured image" image-credit
+footers, while the REAL class keys on wire-service house style ("said",
+weekday datelines, "president donald"). In other words, the corpus is two
+entirely different sources with two different writing styles, and stripping a
+single marker does not remove that separation. A realistic evaluation requires
+source-balanced data or an out-of-source split, not just token removal.
 
 ## Ethical considerations
 
