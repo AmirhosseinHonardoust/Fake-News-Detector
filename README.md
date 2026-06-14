@@ -3,19 +3,19 @@
 # Fake News Style-Risk Detector
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-orange)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-TF--IDF%20%2B%20LogReg-orange)
+![Responsible ML](https://img.shields.io/badge/Responsible%20ML-Leakage%20Analysis-green)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)
-![Status](https://img.shields.io/badge/Status-Educational%20ML%20Project-green)
+![Status](https://img.shields.io/badge/Status-Educational%20ML%20Project-purple)
 [![CI](https://github.com/AmirhosseinHonardoust/Fake-News-Detector/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AmirhosseinHonardoust/Fake-News-Detector/actions/workflows/ci.yml)
- 
+
 </div>
-      
-A professional machine learning project that analyzes news text and predicts whether it stylistically resembles **REAL** or **FAKE** news examples from a labeled dataset.
 
-The project uses a **TF-IDF + Logistic Regression** pipeline and includes a Streamlit dashboard, command-line prediction support, model evaluation, leakage analysis, charts, tests, and responsible machine learning documentation.
+A responsible machine learning project that turns news text into a **style-risk signal**, using a **TF-IDF + Logistic Regression** pipeline with **honest evaluation**, **dataset leakage analysis**, **leakage-controlled training**, **checksum-verified model loading**, a **Streamlit dashboard**, and **command-line inference**.
 
-> **Important:** This project is a **style-risk detector**, not a real-world fact-checker.  
-> It does not verify claims using external evidence. Instead, it estimates whether a text looks stylistically similar to examples labeled as real or fake in the training dataset.
+> **Important:** This project is a **style-risk detector and educational demo**, not a real-world fact-checker.
+>
+> The model, thresholds, and reports are designed to demonstrate a professional, honest text-classification workflow. They estimate whether text *looks* stylistically similar to real or fake examples in the training data; they do not verify claims against external evidence and should not be used for fact-checking, moderation, or any high-stakes decision.
 
 ---
 
@@ -24,21 +24,22 @@ The project uses a **TF-IDF + Logistic Regression** pipeline and includes a Stre
 - [Project Overview](#project-overview)
 - [What This Project Does](#what-this-project-does)
 - [What This Project Does Not Do](#what-this-project-does-not-do)
-- [Features](#features)
-- [Dashboard Preview](#dashboard-preview)
-- [Streamlit App Dashboard](#streamlit-app-dashboard)
-- [Charts and Visual Analysis](#charts-and-visual-analysis)
-- [How the Model Works](#how-the-model-works)
+- [Key Features](#key-features)
+- [System Workflow](#system-workflow)
 - [Project Structure](#project-structure)
 - [Installation](#installation)
-- [Training the Model](#training-the-model)
-- [Running the App](#running-the-app)
-- [Command-Line Usage](#command-line-usage)
+- [Quick Start](#quick-start)
+- [Training and Evaluation](#training-and-evaluation)
+- [Leakage Controls and Honest Evaluation](#leakage-controls-and-honest-evaluation)
 - [Model Output](#model-output)
-- [Evaluation](#evaluation)
-- [Dataset Leakage Analysis](#dataset-leakage-analysis)
-- [Testing](#testing)
+- [Model Artifacts and Loading Safety](#model-artifacts-and-loading-safety)
+- [Streamlit Dashboard](#streamlit-dashboard)
+- [Evaluation Metrics](#evaluation-metrics)
+- [Visual Reports](#visual-reports)
+- [Testing and CI](#testing-and-ci)
+- [Code Quality](#code-quality)
 - [Limitations](#limitations)
+- [Responsible Use](#responsible-use)
 - [Future Improvements](#future-improvements)
 - [Tech Stack](#tech-stack)
 - [Author](#author)
@@ -48,20 +49,16 @@ The project uses a **TF-IDF + Logistic Regression** pipeline and includes a Stre
 
 ## Project Overview
 
-Fake news detection is a common natural language processing task. Many beginner projects present fake news classifiers as if they can determine whether a news article is true or false. In reality, a text classifier cannot verify factual truth without external evidence.
+Fake-news detection is often presented as if a text classifier can decide whether an article is true or false. In reality, a classifier cannot verify factual truth without external evidence. A model score is only useful if it can support a defensible action:
 
-This project takes a more responsible approach.
+- label text as resembling real or fake examples
+- abstain on borderline cases instead of forcing a decision
+- expose how much of its performance comes from dataset shortcuts
+- communicate uncertainty and limitations clearly
 
-It classifies text based on learned writing patterns from a labeled dataset and clearly communicates that the model is a **style-based risk detector**, not a factual truth engine.
+This project demonstrates an end-to-end, honest text-classification workflow on a labeled news dataset. It includes preprocessing, model training, threshold-based decisions with an uncertainty band, dataset leakage analysis, leakage-controlled training, source-confounding diagnostics, visual reports, checksum-verified artifacts, and a Streamlit dashboard.
 
-The goal of this project is to demonstrate:
-
-- A clean machine learning workflow
-- Responsible evaluation
-- Honest model limitations
-- Interactive dashboard design
-- Professional documentation
-- Reproducible training and testing
+The goal is to show how a text classifier can be turned into a **responsible decision-support tool**, not just a single accuracy or AUC score.
 
 ---
 
@@ -71,14 +68,16 @@ This project can:
 
 - Analyze a news headline or article excerpt
 - Estimate whether the text resembles real-news or fake-news examples
-- Return a probability score
-- Mark borderline predictions as `UNCERTAIN`
-- Generate evaluation metrics
-- Generate model performance charts
-- Provide a Streamlit dashboard for interaction
-- Save trained model artifacts
-- Run automated tests
-- Document dataset and model limitations
+- Return a `REAL`, `FAKE`, or `UNCERTAIN` label with a probability
+- Deduplicate the dataset and generate evaluation metrics
+- Generate performance charts and a confidence distribution
+- Quantify dataset leakage with two independent diagnostics
+- Train a leakage-controlled model that strips source artifacts
+- Report whether an out-of-source evaluation is even feasible
+- Save model artifacts with checksum sidecars
+- Verify artifact integrity on load
+- Provide a Streamlit dashboard for interactive triage
+- Run automated tests and CI smoke workflows
 
 ---
 
@@ -87,264 +86,55 @@ This project can:
 This project does **not**:
 
 - Prove whether a claim is true or false
-- Search the web for supporting evidence
+- Search the web or retrieve supporting evidence
 - Replace professional fact-checkers
 - Detect all types of misinformation
-- Guarantee real-world accuracy
-- Make high-stakes moderation decisions
+- Guarantee real-world accuracy on unseen sources
+- Make high-stakes moderation or censorship decisions
 
-A real fact-checking system would require claim extraction, evidence retrieval, source credibility analysis, external databases, and human review.
-
----
-
-## Features
-
-- **TF-IDF Vectorization** for text feature extraction
-- **Logistic Regression** classifier
-- **Stratified train/test split**
-- **Cross-validation** on training data
-- **Saved sklearn pipeline** using `joblib`
-- **Streamlit dashboard**
-- **Command-line prediction script**
-- **REAL / FAKE / UNCERTAIN output**
-- **Probability-based confidence score**
-- **Confusion matrix chart**
-- **ROC curve chart**
-- **Class distribution chart**
-- **Prediction confidence analysis**
-- **Dataset leakage report**
-- **Model card**
-- **Data statement**
-- **Pytest test suite**
-- **GitHub Actions CI support**
+A real fact-checking system would need claim extraction, evidence retrieval, source-credibility analysis, external databases, and human review.
 
 ---
 
-## Dashboard Preview
+## Key Features
 
-The project includes an interactive Streamlit dashboard that allows users to paste news text and receive a style-risk prediction.
-
-The dashboard displays:
-
-- Prediction label
-- Fake-style probability
-- Confidence interpretation
-- Responsible-use warning
-- Model metrics
-- Chart references
-- Leakage analysis notes
-
-Example output:
-
-```text
-Prediction: UNCERTAIN
-Fake-style probability: 54.2%
-
-The model is close to the decision boundary.
-Please provide a longer headline or article excerpt for a more reliable prediction.
-```
+- **TF-IDF vectorization** with word n-grams for text feature extraction
+- **Logistic Regression** baseline classifier
+- **Pipeline-embedded `TextCleaner`** so training and inference clean text identically (no train/serve skew)
+- **REAL / FAKE / UNCERTAIN** output with a configurable uncertainty band
+- **Dataset leakage report** with a "contains Reuters" heuristic
+- **Source-confounding diagnostic** with a quantified confounding score
+- **Leakage-controlled training** via source-artifact stripping
+- **Out-of-source evaluation** that runs when the data permits and reports infeasibility when it does not
+- **Checksum-verified model loading** with SHA-256 sidecars
+- **Streamlit dashboard** for interactive style-risk analysis
+- **Command-line inference** with JSON output
+- **Unit tests and GitHub Actions CI**
+- **Model card, data statement, and security documentation**
 
 ---
 
-## Streamlit App Dashboard
-
-<div align="center">
-
-<img width="676" height="761" alt="Screenshot 2026-05-27 at 01-46-00 Fake News Style-Risk Detector" src="https://github.com/user-attachments/assets/cfd823d0-27a3-415b-8d96-7b2bcb274098" />
-</div>
-
-Run the dashboard with:
-
-```bash
-streamlit run src/streamlit_app.py
-```
-
-The dashboard is designed to be simple, readable, and honest about what the model can and cannot do.
-
-### Dashboard Features
-
-<div align="center">
-
-| Feature | Description |
-|---|---|
-| Text Input Area | Allows users to paste a headline, paragraph, or article excerpt |
-| Prediction Label | Displays `REAL`, `FAKE`, or `UNCERTAIN` |
-| Fake-Style Probability | Shows the probability that the text resembles fake-news examples |
-| Confidence Guidance | Explains whether the result is strong or borderline |
-| Responsible-Use Warning | Reminds users that the model is not a fact-checking system |
-| Metrics Section | Displays available evaluation metrics from the trained model |
-| Leakage Warning | Explains why high scores should be interpreted carefully |
-</div>
-
-### Dashboard Interpretation
-
-The dashboard should be interpreted as a **style-risk analysis tool**.
-
-For example:
-
-```text
-Prediction: FAKE
-Fake-style probability: 87%
-```
-
-This means the text is stylistically similar to fake-news examples in the dataset.  
-It does **not** prove that the article is factually false.
-
-Another example:
-
-```text
-Prediction: UNCERTAIN
-Fake-style probability: 53%
-```
-
-This means the model is not confident enough to make a strong classification.  
-The input may be too short, too vague, or too different from the training examples.
-
-### Why the Dashboard Includes an UNCERTAIN State
-
-Many fake-news classifiers force every input into either `REAL` or `FAKE`. This can be misleading, especially for short or ambiguous text.
-
-This project uses an uncertainty band:
-
-```text
-Low fake-style probability      → REAL
-Middle probability range        → UNCERTAIN
-High fake-style probability     → FAKE
-```
-
-This makes the app more responsible and avoids overconfident predictions.
-
----
-
-## Charts and Visual Analysis
-
-The project automatically generates visual outputs during training to make model behavior easier to understand.
-
-Generated charts are saved in:
-
-```text
-outputs/charts/
-```
-
-The main charts include:
-
-<div align="center">
-
-| Chart | Purpose |
-|---|---|
-| Confusion Matrix | Shows correct and incorrect predictions for REAL and FAKE samples |
-| ROC Curve | Shows how well the model separates the two classes across thresholds |
-| Precision-Recall Curve | Shows precision/recall trade-offs for the FAKE class |
-| Class Distribution | Shows whether the dataset is balanced |
-| Confidence Distribution | Helps analyze how confident the model is across predictions |
-</div>
-
-### Confusion Matrix
-
-<div align="center">
-
-<img width="520" height="360" alt="confusion_matrix" src="https://github.com/user-attachments/assets/04d9732c-5efb-4d68-b1bc-04d2afa539a8" />
-</div>
-
-The confusion matrix helps identify:
-
-- REAL articles correctly classified as REAL
-- FAKE articles correctly classified as FAKE
-- REAL articles incorrectly classified as FAKE
-- FAKE articles incorrectly classified as REAL
-
-This is important because accuracy alone can hide model weaknesses.
-
-### ROC Curve
-
-<div align="center">
-
-<img width="520" height="360" alt="roc_curve" src="https://github.com/user-attachments/assets/b96c992f-8d48-4f76-9b43-eab15eeb4438" />
-</div>
-
-The ROC curve shows the trade-off between true positive rate and false positive rate at different classification thresholds.
-
-A strong ROC-AUC score means the model separates the dataset classes well. However, ROC-AUC should still be interpreted carefully because dataset leakage can make results look stronger than they would be in real-world use.
-
-### Precision-Recall Curve
-
-<div align="center">
-
-<img width="520" height="360" alt="pr_curve" src="https://github.com/user-attachments/assets/ef755b40-3798-4fe3-936d-287fe72e9a17" />
-</div>
-
-The precision-recall curve is useful for understanding how precision and recall change for the FAKE class across thresholds.
-
-### Class Distribution
-
-<div align="center">
-
-<img width="520" height="350" alt="class_distribution" src="https://github.com/user-attachments/assets/d0b7758a-11b7-41da-8c8b-cac99adf469b" />
-</div>
-
-The class distribution chart shows whether the dataset is balanced between REAL and FAKE articles.
-
-Balanced datasets are useful because they prevent accuracy from being inflated by a dominant class.
-
-### Confidence Distribution
-
-<div align="center">
-
-<img width="520" height="350" alt="confidence_distribution" src="https://github.com/user-attachments/assets/5c3dcf79-172d-4a28-bb4e-bc07abe836e8" />
-</div>
-
-The confidence distribution helps explain how often the model makes strong predictions versus borderline predictions.
-
-This is directly connected to the `UNCERTAIN` output.
-
-Example:
-
-```text
-Fake-style probability: 51%
-Output: UNCERTAIN
-```
-
-This is more responsible than forcing the output to `REAL` or `FAKE`.
-
----
-
-## How the Model Works
-
-The model uses a classic supervised machine learning pipeline:
+## System Workflow
 
 ```text
 Raw news text
-   ↓
-Text preprocessing
-   ↓
+        ↓
+Text preprocessing (TextCleaner)
+        ↓
 TF-IDF vectorization
-   ↓
+        ↓
 Logistic Regression classifier
-   ↓
-Prediction probability
-   ↓
+        ↓
+Probability + uncertainty band
+        ↓
 REAL / FAKE / UNCERTAIN label
+        ↓
+Leakage and source-confounding diagnostics
+        ↓
+Charts, metrics, and checksum-verified artifacts
+        ↓
+Dashboard and command-line review
 ```
-
-### TF-IDF Vectorization
-
-TF-IDF converts text into numerical features by measuring how important words are in a document relative to the full dataset.
-
-### Logistic Regression
-
-Logistic Regression is a strong baseline model for text classification. It is fast, interpretable, and works well with sparse TF-IDF features.
-
-### Uncertainty Handling
-
-Instead of always forcing a binary prediction, this project includes an uncertainty range.
-
-If the model probability is too close to the decision boundary, the final output becomes:
-
-```text
-UNCERTAIN
-```
-
-This is especially useful for short inputs.
 
 ---
 
@@ -358,12 +148,13 @@ Fake-News-Detector/
 │       └── ci.yml
 │
 ├── data/
-│   ├── Fake.csv
-│   └── True.csv
+│   ├── True.csv
+│   └── Fake.csv
 │
 ├── docs/
 │   ├── data_statement.md
-│   └── model_card.md
+│   ├── model_card.md
+│   └── security.md
 │
 ├── outputs/
 │   ├── charts/
@@ -374,29 +165,37 @@ Fake-News-Detector/
 │   │   └── roc_curve.png
 │   ├── artifact_environment.json
 │   ├── data_profile.json
-│   ├── holdout_predictions.csv
 │   ├── leakage_report.json
+│   ├── source_confounding_report.json
 │   ├── metrics.json
-│   ├── model.joblib
+│   ├── holdout_predictions.csv
 │   ├── pipeline.joblib
-│   └── vectorizer.joblib
+│   ├── pipeline.joblib.sha256
+│   ├── vectorizer.joblib
+│   └── model.joblib
 │
 ├── src/
 │   ├── detect_fake_news.py
+│   ├── evaluation.py
 │   ├── model_compat.py
 │   ├── streamlit_app.py
 │   ├── text_clean.py
-│   ├── train_model.py
-│   └── utils.py
+│   └── train_model.py
 │
 ├── tests/
+│   ├── test_cli_predict.py
+│   ├── test_evaluation.py
+│   ├── test_model_compat.py
+│   ├── test_pipeline.py
+│   ├── test_text_clean.py
+│   └── test_training_smoke_artifacts.py
 │
 ├── README.md
+├── Makefile
+├── pyproject.toml
 ├── requirements.txt
 ├── requirements-dev.txt
-├── requirements-lock.txt
-├── pyproject.toml
-└── Makefile
+└── requirements-lock.txt
 ```
 
 ---
@@ -432,7 +231,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-For development tools:
+For development tools (pytest, Ruff):
 
 ```bash
 pip install -r requirements-dev.txt
@@ -440,81 +239,84 @@ pip install -r requirements-dev.txt
 
 ---
 
-## Training the Model
+## Quick Start
 
-Run:
+Train the model:
 
 ```bash
 python src/train_model.py
 ```
 
-This will:
-
-- Load the dataset
-- Preprocess the text
-- Split the data into train and test sets
-- Train the TF-IDF + Logistic Regression pipeline
-- Run evaluation
-- Save the trained model
-- Save metrics
-- Generate charts
-- Generate leakage analysis
-
-Generated outputs:
-
-```text
-outputs/pipeline.joblib
-outputs/metrics.json
-outputs/holdout_predictions.csv
-outputs/charts/
-outputs/leakage_report.json
-```
-
----
-
-## Running the App
-
-Run:
+Launch the dashboard:
 
 ```bash
 streamlit run src/streamlit_app.py
 ```
 
-Then open the local URL shown in your terminal.
-
-The app will load the trained pipeline from:
-
-```text
-outputs/pipeline.joblib
-```
-
-If the model file does not exist, train the model first:
+Classify text from the command line:
 
 ```bash
-python src/train_model.py
+python src/detect_fake_news.py --text "Officials announced a new economic policy today."
 ```
 
 ---
 
-## Command-Line Usage
+## Training and Evaluation
 
-You can also make predictions directly from the terminal.
-
-```bash
-python src/detect_fake_news.py --text "Your news text here"
-```
-
-Example:
+The training script loads and deduplicates the data, splits it, trains the pipeline, evaluates on a holdout set, writes the leakage and source-confounding diagnostics, generates charts, and saves checksum-verified artifacts.
 
 ```bash
-python src/detect_fake_news.py --text "Government officials announced a new economic policy today."
+python src/train_model.py \
+  --real data/True.csv \
+  --fake data/Fake.csv \
+  --outdir outputs
 ```
 
-For JSON output:
+Generated outputs include:
+
+```text
+outputs/metrics.json
+outputs/data_profile.json
+outputs/leakage_report.json
+outputs/source_confounding_report.json
+outputs/holdout_predictions.csv
+outputs/pipeline.joblib
+outputs/pipeline.joblib.sha256
+outputs/charts/
+```
+
+---
+
+## Leakage Controls and Honest Evaluation
+
+The bundled dataset is small (1,998 rows; 1,991 after deduplication: 992 REAL, 999 FAKE) and **not source-balanced**. Almost every REAL article is Reuters wire copy (`politicsNews`), while the FAKE articles come from a different source (`News`). The model can separate the classes by recognizing the source rather than detecting misinformation.
+
+Two diagnostics, written on every run, make this explicit:
+
+<div align="center">
+
+| Diagnostic | Finding |
+|---|---|
+| `outputs/leakage_report.json` | A one-rule heuristic, "contains Reuters => REAL", reaches about 99.5% accuracy alone |
+| `outputs/source_confounding_report.json` | The `subject` column has a **confounding score of 1.000** (`politicsNews` is 100% REAL, `News` is 100% FAKE) |
+
+</div>
+
+To train without the most obvious shortcut, strip Reuters datelines and mentions before vectorizing:
 
 ```bash
-python src/detect_fake_news.py --text "Your news text here" --json
+python src/train_model.py --strip-source-artifacts
 ```
+
+On this dataset, accuracy moves only from **1.000 to 0.995** — useful evidence that the leakage runs deeper than one token. With Reuters removed, FAKE is still separable from "Getty images" / "featured image" footers and REAL from wire-service style.
+
+An honest out-of-source split (train on some sources, test on entirely held-out ones) is the right robustness check, but it is **impossible on this dataset** because each source maps to exactly one label. The diagnostic reports this automatically; on a source-balanced dataset it runs the real split:
+
+```bash
+python src/train_model.py --eval-out-of-source --group-col subject
+```
+
+> These diagnostics are transparency tools. High accuracy on this dataset reflects source recognition, not real-world fake-news detection.
 
 ---
 
@@ -528,164 +330,244 @@ The model returns one of three labels:
 |---|---|
 | `REAL` | The text resembles real-news examples in the dataset |
 | `FAKE` | The text resembles fake-news examples in the dataset |
-| `UNCERTAIN` | The model confidence is too close to the decision boundary |
+| `UNCERTAIN` | The probability is too close to the decision boundary |
+
 </div>
 
-Example:
+With `--json`, the CLI prints a machine-readable result:
 
 ```json
 {
   "label": "UNCERTAIN",
-  "fake_probability": 0.54,
-  "confidence": "low"
+  "prob_fake": 0.54,
+  "threshold": 0.5,
+  "uncertainty_margin": 0.1,
+  "model_path": "outputs/pipeline.joblib"
 }
 ```
 
----
-
-## Evaluation
-
-The project uses an honest evaluation workflow.
-
-Evaluation includes:
-
-- Stratified train/test split
-- Cross-validation on the training set
-- Accuracy
-- Precision
-- Recall
-- F1-score
-- ROC-AUC
-- Confusion matrix
-- ROC curve
-
-Metrics are saved to:
-
-```text
-outputs/metrics.json
-```
-
-Charts are saved to:
-
-```text
-outputs/charts/
-```
-
-### Why This Matters
-
-A common mistake in beginner ML projects is evaluating the model on the same data used for training. That produces misleadingly high results.
-
-This project avoids that by using a separate test set and reporting metrics more responsibly.
+`UNCERTAIN` is returned when the fake-style probability falls inside the band around the threshold (by default 0.45–0.55).
 
 ---
 
-## Dataset Leakage Analysis
+## Model Artifacts and Loading Safety
 
-Fake news datasets can contain hidden shortcuts.
+The trained model is stored as a joblib/pickle file. **Deserializing a pickle executes arbitrary code**, so only load artifacts you produced yourself or fully trust — never one downloaded from an untrusted source.
 
-For example, if REAL articles mostly come from one publisher and FAKE articles mostly come from another, the model may learn publisher-specific patterns instead of general fake-news signals.
-
-This project includes a leakage report saved at:
+As an integrity safeguard, training writes a checksum sidecar next to the pipeline, and loading verifies it:
 
 ```text
-outputs/leakage_report.json
+outputs/pipeline.joblib
+outputs/pipeline.joblib.sha256
 ```
 
-The leakage report helps explain whether the model may be relying on dataset-specific artifacts.
+`model_compat.load_pipeline()` checks the sidecar by default and raises on a mismatch; pass `verify=False` to bypass.
 
-This makes the project more transparent and professionally defensible.
+> The checksum guards against accidental corruption or a casual file swap, not a determined attacker. See `docs/security.md` for the full threat model.
 
 ---
 
-## Testing
+## Streamlit Dashboard
 
-Run the test suite:
+Launch the app:
+
+```bash
+streamlit run src/streamlit_app.py
+```
+
+The dashboard helps review:
+
+- the predicted `REAL` / `FAKE` / `UNCERTAIN` label
+- the fake-style probability and confidence guidance
+- the decision rule and adjustable threshold and uncertainty band
+- holdout metrics from the trained model
+- a responsible-use warning for short or ambiguous inputs
+
+<div align="center">
+<img width="676" alt="Streamlit dashboard" src="https://github.com/user-attachments/assets/cfd823d0-27a3-415b-8d96-7b2bcb274098" />
+</div>
+
+---
+
+## Evaluation Metrics
+
+Evaluation uses a stratified train/test split with cross-validation on the training split only.
+
+<div align="center">
+
+| Metric | Why it matters |
+|---|---|
+| Accuracy | Overall correctness at the default decision rule |
+| Macro F1 | Balance across the REAL and FAKE classes |
+| Precision / Recall (FAKE) | Quality of FAKE predictions and coverage of FAKE cases |
+| ROC-AUC | Ranking quality across thresholds |
+| Average precision / PR-AUC | Positive-class ranking quality |
+| Confounding score | How strongly the source determines the label (1.0 = fully confounded) |
+
+</div>
+
+Example results from the included run, with and without source stripping:
+
+<div align="center">
+
+| Metric | Leaked (default) | De-leaked (`--strip-source-artifacts`) |
+|---|---:|---:|
+| Holdout accuracy | 1.000 | 0.995 |
+| Holdout macro F1 | 1.000 | 0.995 |
+| Holdout ROC-AUC | 1.000 | 1.000 |
+| Confounding score | 1.000 | 1.000 |
+
+</div>
+
+> The near-perfect leaked numbers are evidence of source leakage, not real-world performance. Read them alongside the leakage diagnostics.
+
+---
+
+## Visual Reports
+
+### Model evaluation charts
+
+<div align="center">
+
+| Confusion Matrix | ROC Curve |
+|---|---|
+| ![Confusion matrix](https://github.com/user-attachments/assets/04d9732c-5efb-4d68-b1bc-04d2afa539a8) | ![ROC curve](https://github.com/user-attachments/assets/b96c992f-8d48-4f76-9b43-eab15eeb4438) |
+| **Analysis:** The confusion matrix shows correct and incorrect predictions for REAL and FAKE on the holdout set. Accuracy alone can hide weaknesses, so the per-class view matters. | **Analysis:** The ROC curve shows class separation across thresholds. A strong AUC should still be read carefully here, since source leakage inflates separability. |
+
+</div>
+
+### Probability behavior
+
+<div align="center">
+
+| Precision-Recall Curve | Confidence Distribution |
+|---|---|
+| ![Precision-recall curve](https://github.com/user-attachments/assets/ef755b40-3798-4fe3-936d-287fe72e9a17) | ![Confidence distribution](https://github.com/user-attachments/assets/5c3dcf79-172d-4a28-bb4e-bc07abe836e8) |
+| **Analysis:** The precision-recall curve shows how precision and recall trade off for the FAKE class across thresholds. | **Analysis:** The confidence distribution shows how often the model makes strong versus borderline predictions, which connects directly to the `UNCERTAIN` band. |
+
+</div>
+
+<details>
+<summary>Additional class distribution chart</summary>
+
+<div align="center">
+
+![Class distribution](https://github.com/user-attachments/assets/d0b7758a-11b7-41da-8c8b-cac99adf469b)
+
+The class distribution chart shows whether the dataset is balanced between REAL and FAKE, which prevents accuracy from being inflated by a dominant class.
+
+</div>
+
+</details>
+
+---
+
+## Testing and CI
+
+Run unit tests locally:
 
 ```bash
 pytest
 ```
 
-The tests check important project behavior, including:
+Compile source files and lint:
 
-- Text preprocessing
-- Model compatibility
-- Prediction output
-- Training artifacts
-- App-related utility functions
+```bash
+python -m compileall src tests
+ruff check src tests
+```
+
+The GitHub Actions workflow checks:
+
+- dependency installation
+- source compilation
+- unit tests
+- linting with Ruff
+- a default training smoke workflow
+- a leakage-controlled (`--strip-source-artifacts`) training smoke workflow
+- CLI prediction schema validation
+- training artifact and metrics validation
+- checksum-sidecar integrity validation
+
+CI is defined in:
+
+```text
+.github/workflows/ci.yml
+```
 
 ---
 
 ## Code Quality
 
-The project includes development tooling through:
+The project separates responsibilities across modules:
 
-```text
-pyproject.toml
-requirements-dev.txt
-```
+<div align="center">
 
-These files support:
+| Module | Purpose |
+|---|---|
+| `src/text_clean.py` | Text normalization and the pipeline `TextCleaner`, including source-artifact stripping |
+| `src/train_model.py` | Trains the pipeline, runs evaluation and diagnostics, writes artifacts |
+| `src/evaluation.py` | Source-confounding diagnostic and out-of-source holdout |
+| `src/model_compat.py` | Checksum integrity checks and cross-version loading repairs |
+| `src/detect_fake_news.py` | Command-line inference with REAL / FAKE / UNCERTAIN output |
+| `src/streamlit_app.py` | Interactive dashboard for style-risk analysis |
 
-- Automated tests
-- Linting configuration
-- Cleaner project maintenance
-- More professional GitHub presentation
+</div>
+
+Tooling is configured through `pyproject.toml` (Ruff, pytest) and `requirements-dev.txt`.
 
 ---
 
 ## Limitations
 
-This project has important limitations.
+This project has important limitations:
 
-The model:
+- The dataset is a small educational snapshot, not a production corpus
+- The model does not verify factual truth or understand real-world events
+- The bundled data separates almost entirely on source, not on misinformation
+- High accuracy on this dataset does not imply real-world accuracy
+- The model may perform poorly on unseen sources or very short text
+- An out-of-source evaluation is impossible on the bundled, single-source data
+- Predictions are style-risk estimates, not fact-check verdicts
 
-- Does not verify factual truth
-- Does not search external sources
-- Does not understand real-world events
-- May learn dataset-specific patterns
-- May perform poorly on unseen news sources
-- May be unreliable for very short text
-- Should not be used for real-world moderation or censorship
-
-High performance on the included dataset does not guarantee high performance in real-world fake news detection.
+The project is strongest as a portfolio demonstration of honest, leakage-aware text-classification workflow design.
 
 ---
 
 ## Responsible Use
 
-This project is intended for:
+This repository is intended for:
 
-- Machine learning education
-- NLP portfolio demonstration
-- Text classification practice
-- Streamlit dashboard development
-- Responsible ML documentation practice
+- machine learning and NLP education
+- demonstrating honest, leakage-aware evaluation
+- practicing text-classification workflows
+- exploring uncertainty handling and abstention
+- responsible-ML documentation practice
+- portfolio demonstration
 
-It should not be used for:
+It should not be used as-is for:
 
-- Automated fact-checking
-- Political content moderation
-- Legal or journalistic decisions
-- High-stakes classification
-- Replacing human review
+- automated fact-checking
+- political or news content moderation
+- credibility scoring without human review
+- legal or journalistic decisions
+- any high-stakes classification
+
+Any real deployment would require diverse data, external validation, fairness review, and a human escalation process.
 
 ---
 
 ## Future Improvements
 
-Possible future improvements include:
+Potential next improvements:
 
-- Add more diverse datasets
-- Evaluate on external news datasets
-- Add dataset deduplication checks
-- Add model comparison experiments
-- Add calibration analysis
-- Add SHAP or feature importance explanations
-- Add Docker support
-- Add a full EDA notebook
-- Deploy the Streamlit app online
-- Add more advanced NLP models
-- Improve uncertainty calibration
+- Add source-balanced and time-separated datasets
+- Add external validation on publishers absent from training
+- Extend artifact stripping beyond the Reuters marker
+- Add calibration metrics such as Brier score and reliability plots
+- Add SHAP or feature-importance explanations
+- Add Docker support and deploy the dashboard
+- Explore stronger NLP models
 - Add out-of-distribution detection
 
 ---
@@ -700,6 +582,7 @@ Possible future improvements include:
 - Streamlit
 - joblib
 - pytest
+- Ruff
 - GitHub Actions
 
 ---
@@ -714,6 +597,6 @@ GitHub: [@AmirhosseinHonardoust](https://github.com/AmirhosseinHonardoust)
 
 ## License
 
-This project is intended for educational and portfolio purposes.
+This project is intended for educational, research, and portfolio purposes.
 
 If you use or modify this project, please keep the responsible-use notes and limitations clear.
