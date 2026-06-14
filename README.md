@@ -7,7 +7,7 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)
 ![Status](https://img.shields.io/badge/Status-Educational%20ML%20Project-green)
 [![CI](https://github.com/AmirhosseinHonardoust/Fake-News-Detector/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AmirhosseinHonardoust/Fake-News-Detector/actions/workflows/ci.yml)
-
+ 
 </div>
 
 A professional machine learning project that analyzes news text and predicts whether it stylistically resembles **REAL** or **FAKE** news examples from a labeled dataset.
