@@ -73,10 +73,13 @@ class TextCleaner(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: Iterable[object]) -> list[str]:
+        # ``getattr`` (rather than ``self.strip_source``) keeps pipelines that were
+        # pickled before this flag existed loadable; they default to no stripping.
+        strip_source = getattr(self, "strip_source", False)
         cleaned = []
         for x in X:
             value = x if isinstance(x, str) else ""
-            if self.strip_source:
+            if strip_source:
                 value = strip_source_artifacts(value)
             cleaned.append(clean_text(value))
         return cleaned

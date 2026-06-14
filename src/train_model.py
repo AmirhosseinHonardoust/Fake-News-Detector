@@ -35,6 +35,7 @@ from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_
 from sklearn.pipeline import Pipeline
 
 from evaluation import out_of_source_evaluation, source_confounding_report
+from model_compat import write_checksum
 from text_clean import TextCleaner, clean_text
 
 LABEL_NAMES: Final[list[str]] = ["REAL", "FAKE"]
@@ -467,6 +468,7 @@ def main() -> None:
     predictions.to_csv(outdir / "holdout_predictions.csv", index=False)
 
     joblib.dump(pipeline, outdir / "pipeline.joblib")
+    write_checksum(outdir / "pipeline.joblib")
     # Legacy artifacts are saved for compatibility, but the full pipeline is preferred.
     joblib.dump(pipeline.named_steps["tfidf"], outdir / "vectorizer.joblib")
     joblib.dump(pipeline.named_steps["classifier"], outdir / "model.joblib")

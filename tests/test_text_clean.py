@@ -31,3 +31,12 @@ def test_text_cleaner_strip_source_flag_is_applied():
     out = cleaner.transform(["LONDON (Reuters) - Markets rose on Monday."])
     assert "reuters" not in out[0]
     assert "markets rose" in out[0]
+
+
+def test_text_cleaner_handles_pickle_without_strip_source_attr():
+    # Simulate a pipeline pickled before the strip_source flag existed.
+    cleaner = TextCleaner()
+    del cleaner.strip_source
+    assert cleaner.transform(["WASHINGTON (Reuters) - Senate voted today."]) == [
+        "washington (reuters) - senate voted today."
+    ]
