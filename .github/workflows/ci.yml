@@ -47,6 +47,20 @@ jobs:
             --min-df 2 \
             --C 1.0
 
+      - name: Run leakage-controlled training smoke workflow
+        run: |
+          python src/train_model.py \
+            --real data/True.csv \
+            --fake data/Fake.csv \
+            --outdir ci_outputs_deleaked \
+            --cv-folds 2 \
+            --max-features 3000 \
+            --ngram-max 1 \
+            --min-df 2 \
+            --C 1.0 \
+            --strip-source-artifacts \
+            --eval-out-of-source
+
       - name: Run CLI prediction smoke check
         run: |
           python src/detect_fake_news.py \
@@ -58,6 +72,11 @@ jobs:
         env:
           FAKE_NEWS_TRAINING_OUTDIR: ci_outputs
           FAKE_NEWS_PREDICTION_JSON: ci_outputs/prediction.json
+        run: pytest -q tests/test_training_smoke_artifacts.py
+
+      - name: Validate leakage-controlled smoke artifacts
+        env:
+          FAKE_NEWS_TRAINING_OUTDIR: ci_outputs_deleaked
         run: pytest -q tests/test_training_smoke_artifacts.py
 
       - name: Upload smoke outputs

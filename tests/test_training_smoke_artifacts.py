@@ -11,9 +11,11 @@ EXPECTED_OUTPUT_FILES = [
     "artifact_environment.json",
     "data_profile.json",
     "leakage_report.json",
+    "source_confounding_report.json",
     "metrics.json",
     "holdout_predictions.csv",
     "pipeline.joblib",
+    "pipeline.joblib.sha256",
     "vectorizer.joblib",
     "model.joblib",
     "charts/class_distribution.png",
@@ -52,6 +54,9 @@ def test_metrics_json_has_expected_schema(smoke_outdir: Path) -> None:
     assert "cross_validation_train_only" in metrics
     assert "dataset_profile" in metrics
     assert "holdout_test" in metrics
+    assert "source_artifacts_stripped" in metrics
+    assert isinstance(metrics["source_artifacts_stripped"], bool)
+    assert "source_confounding" in metrics
 
     holdout = metrics["holdout_test"]
     assert isinstance(holdout, dict)
@@ -81,6 +86,28 @@ def test_leakage_report_has_expected_schema(smoke_outdir: Path) -> None:
         assert "count" in label_stats
         assert "rate" in label_stats
         assert 0.0 <= float(label_stats["rate"]) <= 1.0
+
+
+def test_source_confounding_report_has_expected_schema(smoke_outdir: Path) -> None:
+    report = read_json(smoke_outdir / "source_confounding_report.json")
+
+    assert "available" in report
+    if report["available"]:
+        assert "confounding_score" in report
+        assert 0.5 <= float(report["confounding_score"]) <= 1.0
+        assert "out_of_source_split_feasible" in report
+        assert isinstance(report["out_of_source_split_feasible"], bool)
+        assert "interpretation" in report
+
+
+def test_pipeline_matches_its_checksum_sidecar(smoke_outdir: Path) -> None:
+    import hashlib
+
+    pipeline_path = smoke_outdir / "pipeline.joblib"
+    sidecar = smoke_outdir / "pipeline.joblib.sha256"
+    expected = sidecar.read_text(encoding="utf-8").split()[0].strip()
+    actual = hashlib.sha256(pipeline_path.read_bytes()).hexdigest()
+    assert actual == expected
 
 
 def test_data_profile_has_expected_schema(smoke_outdir: Path) -> None:
