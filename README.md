@@ -9,7 +9,7 @@
 [![CI](https://github.com/AmirhosseinHonardoust/Fake-News-Detector/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AmirhosseinHonardoust/Fake-News-Detector/actions/workflows/ci.yml)
 
 </div>
- 
+
 A professional machine learning project that analyzes news text and predicts whether it stylistically resembles **REAL** or **FAKE** news examples from a labeled dataset.
 
 The project uses a **TF-IDF + Logistic Regression** pipeline and includes a Streamlit dashboard, command-line prediction support, model evaluation, leakage analysis, charts, tests, and responsible machine learning documentation.
