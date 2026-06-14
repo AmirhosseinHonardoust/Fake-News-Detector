@@ -111,10 +111,10 @@ def build_labeled_frame(real_path: Path, fake_path: Path, text_col: str, include
     return data, profile
 
 
-def build_pipeline(max_features: int, min_df: int, max_df: float, ngram_max: int, C: float) -> Pipeline:
+def build_pipeline(max_features: int, min_df: int, max_df: float, ngram_max: int, C: float, strip_source: bool = False) -> Pipeline:
     return Pipeline(
         steps=[
-            ("cleaner", TextCleaner()),
+            ("cleaner", TextCleaner(strip_source=strip_source)),
             (
                 "tfidf",
                 TfidfVectorizer(
@@ -314,6 +314,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-df", type=float, default=0.9, help="Maximum document frequency.")
     parser.add_argument("--C", type=float, default=2.0, help="Logistic Regression inverse regularization strength.")
     parser.add_argument("--no-title", action="store_true", help="Do not prepend title when a title column exists.")
+    parser.add_argument(
+        "--strip-source-artifacts",
+        action="store_true",
+        help="Leakage control: remove Reuters datelines/mentions before training so the "
+        "model cannot separate classes by recognizing the wire source. Produces a more "
+        "honest (usually lower) accuracy estimate.",
+    )
     return parser.parse_args()
 
 
@@ -348,6 +355,7 @@ def main() -> None:
         max_df=args.max_df,
         ngram_max=args.ngram_max,
         C=args.C,
+        strip_source=args.strip_source_artifacts,
     )
 
     cv = StratifiedKFold(n_splits=args.cv_folds, shuffle=True, random_state=args.random_state)
@@ -372,6 +380,7 @@ def main() -> None:
         "label_mapping": ID_TO_LABEL,
         "random_state": args.random_state,
         "threshold": args.threshold,
+        "source_artifacts_stripped": bool(args.strip_source_artifacts),
         "dataset_profile": asdict(profile),
         "validation_protocol": {
             "holdout_test_size": args.test_size,
@@ -391,6 +400,13 @@ def main() -> None:
         "notes": [
             "Holdout metrics are more meaningful than training metrics, but the included dataset has known source/style leakage.",
             "See outputs/leakage_report.json before making real-world claims.",
+            (
+                "Source artifacts (Reuters datelines/mentions) were stripped before training; "
+                "this metric is a more honest estimate of style-based separability."
+                if args.strip_source_artifacts
+                else "Source artifacts were NOT stripped; this metric is inflated by wire-source leakage. "
+                "Re-run with --strip-source-artifacts for an honest estimate."
+            ),
         ],
     }
     write_json(metrics, outdir / "metrics.json")
@@ -417,6 +433,7 @@ def main() -> None:
     joblib.dump(pipeline.named_steps["classifier"], outdir / "model.joblib")
 
     print("Training complete")
+    print(f"Source artifacts stripped: {bool(args.strip_source_artifacts)}")
     print(f"Rows after deduplication: {profile.rows_after_deduplication}")
     print(f"Holdout accuracy: {test_metrics['accuracy']:.3f}")
     print(f"Holdout macro F1: {test_metrics['macro_f1']:.3f}")
