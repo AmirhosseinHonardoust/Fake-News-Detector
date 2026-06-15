@@ -1,0 +1,20 @@
+{
+  "group_col": "subject",
+  "available": true,
+  "n_groups": 2,
+  "crosstab": {
+    "News": {
+      "REAL": 0,
+      "FAKE": 999
+    },
+    "politicsNews": {
+      "REAL": 992,
+      "FAKE": 0
+    }
+  },
+  "groups_with_real": 1,
+  "groups_with_fake": 1,
+  "confounding_score": 1.0,
+  "out_of_source_split_feasible": false,
+  "interpretation": "Source is confounded with the label: at least one class is confined to a single group, so any out-of-source holdout would produce a single-class test set. An honest out-of-source evaluation is impossible on this dataset; this is direct evidence that high accuracy reflects source recognition."
+}

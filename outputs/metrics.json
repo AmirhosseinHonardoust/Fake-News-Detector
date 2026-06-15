@@ -1,0 +1,162 @@
+{
+  "model": "TF-IDF + Logistic Regression",
+  "label_mapping": {
+    "0": "REAL",
+    "1": "FAKE"
+  },
+  "random_state": 42,
+  "threshold": 0.5,
+  "source_artifacts_stripped": false,
+  "dataset_profile": {
+    "total_rows": 1998,
+    "rows_after_deduplication": 1991,
+    "duplicate_rows_removed": 7,
+    "class_balance": {
+      "REAL": 992,
+      "FAKE": 999
+    },
+    "text_column_used": "text",
+    "title_column_used": false
+  },
+  "validation_protocol": {
+    "holdout_test_size": 0.2,
+    "split_strategy": "stratified train/test split",
+    "cross_validation": "3-fold StratifiedKFold on training split only"
+  },
+  "cross_validation_train_only": {
+    "accuracy": {
+      "mean": 0.9962323372300986,
+      "std": 0.002662465256058757
+    },
+    "macro_f1": {
+      "mean": 0.9962323260856386,
+      "std": 0.002662476268578318
+    },
+    "roc_auc": {
+      "mean": 0.9999289948284625,
+      "std": 6.447854032222551e-05
+    }
+  },
+  "train": {
+    "threshold": 0.5,
+    "accuracy": 1.0,
+    "precision_fake": 1.0,
+    "recall_fake": 1.0,
+    "f1_fake": 1.0,
+    "macro_f1": 1.0,
+    "confusion_matrix": [
+      [
+        793,
+        0
+      ],
+      [
+        0,
+        799
+      ]
+    ],
+    "classification_report": {
+      "REAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 793.0
+      },
+      "FAKE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 799.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 1592.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 1592.0
+      }
+    },
+    "split": "train",
+    "roc_auc": 1.0,
+    "average_precision": 1.0
+  },
+  "holdout_test": {
+    "threshold": 0.5,
+    "accuracy": 1.0,
+    "precision_fake": 1.0,
+    "recall_fake": 1.0,
+    "f1_fake": 1.0,
+    "macro_f1": 1.0,
+    "confusion_matrix": [
+      [
+        199,
+        0
+      ],
+      [
+        0,
+        200
+      ]
+    ],
+    "classification_report": {
+      "REAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 199.0
+      },
+      "FAKE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 399.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 399.0
+      }
+    },
+    "split": "holdout_test",
+    "roc_auc": 1.0,
+    "average_precision": 1.0
+  },
+  "source_confounding": {
+    "group_col": "subject",
+    "available": true,
+    "n_groups": 2,
+    "crosstab": {
+      "News": {
+        "REAL": 0,
+        "FAKE": 999
+      },
+      "politicsNews": {
+        "REAL": 992,
+        "FAKE": 0
+      }
+    },
+    "groups_with_real": 1,
+    "groups_with_fake": 1,
+    "confounding_score": 1.0,
+    "out_of_source_split_feasible": false,
+    "interpretation": "Source is confounded with the label: at least one class is confined to a single group, so any out-of-source holdout would produce a single-class test set. An honest out-of-source evaluation is impossible on this dataset; this is direct evidence that high accuracy reflects source recognition."
+  },
+  "out_of_source_holdout": null,
+  "notes": [
+    "Holdout metrics are more meaningful than training metrics, but the included dataset has known source/style leakage.",
+    "See outputs/leakage_report.json before making real-world claims.",
+    "Source artifacts were NOT stripped; this metric is inflated by wire-source leakage. Re-run with --strip-source-artifacts for an honest estimate."
+  ]
+}
