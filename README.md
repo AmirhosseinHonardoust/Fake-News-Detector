@@ -1,6 +1,7 @@
-<div align="center">
+`<div align="center">
 
 # Fake News Style-Risk Detector
+<img width="1663" height="941" alt="Fake-News-Detector" src="https://github.com/user-attachments/assets/30b2c860-7bd5-4751-9800-17332b958471" />
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-TF--IDF%20%2B%20LogReg-orange)
